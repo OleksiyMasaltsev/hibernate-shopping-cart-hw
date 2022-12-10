@@ -1,28 +1,18 @@
 package mate.academy.util;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 public class HashUtil {
-    private static final String HASH_ALGORITHM = "SHA-512";
+    private static final String PBKDF_ALGORITHM = "PBKDF2WithHmacSHA1";
+    private static final int ITERATION_COUNT = 65536;
+    private static final int KEY_LENGTH = 128;
 
     private HashUtil() {
-    }
-
-    public static String hashPassword(String password, byte[] salt) {
-        StringBuilder hashedPassword = new StringBuilder();
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance(HASH_ALGORITHM);
-            messageDigest.update(salt);
-            byte[] symbols = messageDigest.digest(password.getBytes());
-            for (byte symbol : symbols) {
-                hashedPassword.append(String.format("%02x", symbol));
-            }
-            return hashedPassword.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Can't hash password!", e);
-        }
     }
 
     public static byte[] getSalt() {
@@ -30,5 +20,20 @@ public class HashUtil {
         byte[] salt = new byte[16];
         random.nextBytes(salt);
         return salt;
+    }
+
+    public static String hashPassword(String password, byte[] salt) {
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
+        try {
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_ALGORITHM);
+            byte[] bytes = factory.generateSecret(spec).getEncoded();
+            StringBuilder hashedPassword = new StringBuilder();
+            for (byte b : bytes) {
+                hashedPassword.append(String.format("%02x", b));
+            }
+            return hashedPassword.toString();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException("Can't hash the password: " + password, e);
+        }
     }
 }

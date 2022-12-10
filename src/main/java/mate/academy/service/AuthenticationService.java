@@ -1,4 +1,4 @@
-package mate.academy.security;
+package mate.academy.service;
 
 import mate.academy.exception.AuthenticationException;
 import mate.academy.exception.RegistrationException;
