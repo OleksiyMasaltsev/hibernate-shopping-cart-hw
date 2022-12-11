@@ -3,6 +3,7 @@ package mate.academy.service.impl;
 import mate.academy.dao.ShoppingCartDao;
 import mate.academy.dao.TicketDao;
 import mate.academy.lib.Dao;
+import mate.academy.lib.Inject;
 import mate.academy.lib.Service;
 import mate.academy.model.MovieSession;
 import mate.academy.model.ShoppingCart;
@@ -15,9 +16,9 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ShoppingCartServiceImpl implements ShoppingCartService {
-    @Dao
+    @Inject
     private TicketDao ticketDao;
-    @Dao
+    @Inject
     private ShoppingCartDao shoppingCartDao;
 
     @Override
@@ -27,7 +28,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         ticket.setUser(user);
         ticketDao.add(ticket);
 
-        ShoppingCart shoppingCart = getByUser(user);
+        ShoppingCart shoppingCart = shoppingCartDao.getByUser(user).get();
         shoppingCart.getTickets().add(ticket);
         shoppingCartDao.update(shoppingCart);
     }
